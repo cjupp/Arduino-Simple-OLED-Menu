@@ -456,6 +456,7 @@ char menuFrame::choose()
         this->currentMenu = this->menuList[currentMenu].node[nodeIndex].menuCall;
         // Reset the choice index to zero
         this->nodeIndex = 0;
+        this->arrowIndex = 0;
         break;
 
         // Triggers the function pointer associated with the menu node
@@ -486,11 +487,26 @@ char menuFrame::choose()
 ----------------------------------------------------------------------------------------------------------------------*/
 void menuFrame::back()
 {
-    //Changes the current menu to the one linked in the current menu class
-    this->nodeIndex = this->menuList[currentMenu].backLink[NODE];
+    //If the previous menu has less than the max amount of items that can fit on screen, 
+    // have the menu shown as normal
+    if(this->menuList[this->menuList[currentMenu].backLink[MENU]].nodeCount <= MAX_ITEMS)
+    {
+        this->menuStartIndex = 0;
+        this->nodeIndex = this->menuList[currentMenu].backLink[NODE];
+        this->arrowIndex = this->menuList[currentMenu].backLink[NODE];
+    }
+
+    //Otherwise, the arrow and item will appear at the top of the screen
+    else
+    {
+        this->menuStartIndex = this->menuList[currentMenu].backLink[NODE];
+        this->nodeIndex = this->menuList[currentMenu].backLink[NODE];
+        this->arrowIndex = 0;
+    }
 
     //Changes the current node to the one linked in the current menu class
     this->currentMenu = this->menuList[currentMenu].backLink[MENU];
+
 }
 
 void menuFrame::newUp()
@@ -598,7 +614,7 @@ void menuFrame::newBuild()
     }
 
     // Send display buffer
-    oledDisplay.display();
+    //oledDisplay.display();
 }
 
 // -------------------------------------------------------------------------------------------------------------------- //

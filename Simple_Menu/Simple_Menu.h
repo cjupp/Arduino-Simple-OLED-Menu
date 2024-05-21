@@ -4,9 +4,23 @@
 | Created by:     Cameron Jupp
 | Date Started:   December 3, 2022
 --------------------------------------------------------------------------------------------------------------------*/
+
+/* -------------------------------------------------------------------------------------------------------------------- |
+| --------------------------------  / \  / /  / __  /  /__ __/  / ___/  / ____/ --------------------------------------- |
+| -------------------------------  / /\\/ /  / /_/ /    / /    / __/    \__ \  ---------------------------------------- |
+| ------------------------------  /_/  \_/  /_____/    /_/    /____/  /_____/ ----------------------------------------- |
+| --------------------------------------------------------------------------------------------------------------------- |
+| Last left off at:
+|
+| - Scrolling all the way down will place the cursor at the top
+|
+| - Limit characters for menu and nodes (concatenate in program)
+|
+|
+| --------------------------------------------------------------------------------------------------------------------- */
+
 #ifndef SIMPLE_MENU_H
 #define SIMPLE_MENU_H
-
 
 // -------------------------------------------------------------------------------------------------------------------- //
 // --------------------------- /    \   / ___/  / ___/  /_  _/  / \  / /  / ___/  / ____/ ----------------------------- //
@@ -62,7 +76,7 @@ class menuNode
   // Name of the node
   char name[MAX_CHAR];
 
-  // Tells if a node triggers an action or opens another menu
+  // Tells if a node triggers an action or opens another menu. 0 if unconfigured
   char nodeType = 0;
 
   // Stores the menu that the node might call if it is configured as a submenu node
@@ -74,6 +88,7 @@ class menuNode
   void config(char * namePtr, char type, void (*functPtr) (void));
   void setName(char * namePtr);
   void link(char menuNum);
+  
 
 };
 
@@ -112,6 +127,7 @@ class menu
 void addNode(char * nodeName, char nodeType, void (*functPtr) (void));
 void setName(char * namePtr);
 void build(char index);
+void delNode();
 
 };
 
@@ -155,6 +171,8 @@ class menuFrame
   void build();
   void addMenu (char * menuName, char index);
   void addNode(char * nodeName, char nodeType, void (*functPtr) (void));
+  void manAddNode(char * nodeName, char menuNum, char nodeType, void (*functPtr) (void));
+  void delNode();
   void linkNode(char menuNum);
   void up();
   void down();
@@ -169,6 +187,5 @@ class menuFrame
 // -----------------  /_/     /____/  /_/  \_/  /____/    /_/     /___/  /_____/  /_/  \_/  /_____/ ------------------- //
 // -------------------------------------------------------------------------------------------------------------------- //
 
-void oledSystemInit();
 
 #endif

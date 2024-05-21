@@ -7,33 +7,7 @@
 --------------------------------------------------------------------------------------------------------------------*/
 
 #include "Simple_Menu.h"
-
-// -------------------------------------------------------------------------------------------------------------------- //
-// ----------------------------------------------------- OLED  -------------------------------------------------------- //
-// -------------------------------------------------------------------------------------------------------------------- //
-
-// This section can be moved to the Simple_Menu.h file to make the display object accessible from your main()
-#include <Wire.h>
-#include <Adafruit_SSD1306.h>
-
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-
-
-// -------------------------------------------------------------------------------------------------------------------- //
-// -------------------------- / ___/  / /     / __  /  / _ /    / _\      / /     / ____/ ----------------------------- //
-// ------------------------- / /_//  / /__   / /_/ /  / _  \   / /_\\    / /__    \__ \  ------------------------------ //
-// ------------------------ /____/  /____/  /_____/  /_____/  /_/   \\  /____/  /_____/ ------------------------------- //
-// -------------------------------------------------------------------------------------------------------------------- //
-
- // Feel free to add your own global variables, but declaring global menu objects in your main() is recommended
-
+#include "OLED_Tools.h"
 
 // -------------------------------------------------------------------------------------------------------------------- //
 // --------------------------- / ___/  / /     /  \      / ____/  / ____/  / ___/  / ____/ ---------------------------- //
@@ -116,6 +90,7 @@ void menuNode::link(char menuNum)
     this->menuCall = menuNum;
 }
 
+
 // -------------------------------------------------------------------------------------------------------------------- //
 // -------------------------------------------------- MENU CLASS ------------------------------------------------------ //
 // -------------------------------------------------------------------------------------------------------------------- //
@@ -147,6 +122,30 @@ void menu::addNode(char * nodeName, char nodeType, void (*functPtr) (void))
 
     nodeCount++;
 }
+
+
+/*---------------------------------------------------------------------------------------------------------------------
+| menu::del:
+|        -------------------------------------------------------------------------------------------------------
+| Arguments:
+|        -------------------------------------------------------------------------------------------------------
+| Returns: nothing
+|
+|        -------------------------------------------------------------------------------------------------------
+| Notes/Future Changes:
+| - 
+|        -------------------------------------------------------------------------------------------------------
+| Created by: Cameron Jupp
+| Date:       January 14, 2023
+| Edited:     {Date}  
+----------------------------------------------------------------------------------------------------------------------*/
+void menu::delNode()
+{
+    // Overwrite with other nodes in menu
+
+    // If last node deleate all variables and decrement index
+}
+
 
 /*---------------------------------------------------------------------------------------------------------------------
 | menu::setName: Sets/changes the name of the menu 
@@ -193,21 +192,21 @@ void menu::setName(char * namePtr)
 void menu::build(char nodeIndex)
 {
     // Clear the display
-    display.clearDisplay();
-    display.setTextColor(WHITE); // Draw white text
-    display.setCursor(0, 0);     // Start at top-left corner
+    oledDisplay.clearDisplay();
+    oledDisplay.setTextColor(WHITE); // Draw white text
+    oledDisplay.setCursor(0, 0);     // Start at top-left corner
 
     // Use larger text font for menu name
-    display.setTextSize(2);      // Normal 1:1 pixel scale
+    oledDisplay.setTextSize(2);      // Normal 1:1 pixel scale
     // Menu title front decorator
-    display.write("-");
+    oledDisplay.write(" ");
     // Display menu name
-    display.write(this->name);
+    oledDisplay.write(this->name);
     // Menu title back decorator and newline
-    display.write("-\n");
+    oledDisplay.write("\n");
 
     // Set text to smallest size for menu nodes
-    display.setTextSize(1);      // Normal 1:1 pixel scale
+    oledDisplay.setTextSize(1);      // Normal 1:1 pixel scale
 
     // For every node
     for(int i = 0; i < MAX_NODES; i++)
@@ -219,7 +218,7 @@ void menu::build(char nodeIndex)
         // If on the currently selected node, display a special indicator
         if(i == nodeIndex)
         {
-            display.write("-> ");
+            oledDisplay.write("-> ");
             
             //Serial.print("->");
         }
@@ -227,21 +226,21 @@ void menu::build(char nodeIndex)
         // Otherwise space out the same amount of characters to keep nodes aligned
         else
         {
-            display.write("   ");
+            oledDisplay.write("   ");
             
             //Serial.print("  ");
         }
         
         // Display menu name to OLED
-        display.write(this->node[i].name);
-        display.write("\n");
+        oledDisplay.write(this->node[i].name);
+        oledDisplay.write("\n");
         
         //Serial.println(this->node[i].name);
         }
     }
 
     // Send display buffer
-    display.display();
+    oledDisplay.display();
 }
 
 // -------------------------------------------------------------------------------------------------------------------- //
@@ -334,6 +333,63 @@ void menuFrame::addNode(char * nodeName, char nodeType, void (*functPtr) (void))
     // Updates the node link index so that when calling the linkNode function it automatically uses the last made node.
     // This is done for usability and simplicity
     this->nodeLinkIndex = this->menuList[configIndex].nodeCount - 1;
+}
+
+/*---------------------------------------------------------------------------------------------------------------------
+| menuFrame::manAddNode: Adds a node to the menu of choice
+|        -------------------------------------------------------------------------------------------------------
+| Arguments:
+| - char * nodeName: The string pointer to the name of the node (will be displayed)
+|
+| - char menuNum: The index of the menu you would like to add a node to
+|
+| - char nodeType: the type of node; either a SUB node that directs to a menu, or an ACT node that links a function
+|
+| - void (*functPtr) (void): the pointer to the function to be activated, can be left as NULL if not an ACT node
+|
+|        -------------------------------------------------------------------------------------------------------
+| Returns: nothing
+|
+|        -------------------------------------------------------------------------------------------------------
+| Notes/Future Changes:
+| - 
+|        -------------------------------------------------------------------------------------------------------
+| Created by: Cameron Jupp
+| Date:       December 14,2022
+| Edited:     {Date}  
+----------------------------------------------------------------------------------------------------------------------*/
+void menuFrame::manAddNode(char * nodeName, char menuNum, char nodeType, void (*functPtr) (void))
+{
+    // The menuFrame addNode function simply calls the menu::addNode function and passes down the arguments.
+    // This was done to allow the user to still be able to dynamically add nodes from the menu level if need be
+    this->menuList[menuNum].addNode(nodeName, nodeType, functPtr);
+
+    /*
+    // Updates the node link index so that when calling the linkNode function it automatically uses the last made node.
+    // This is done for usability and simplicity
+    this->nodeLinkIndex = this->menuList[configIndex].nodeCount - 1;
+    */
+}
+
+
+/*---------------------------------------------------------------------------------------------------------------------
+| menuFrame::delNode:
+|        -------------------------------------------------------------------------------------------------------
+| Arguments:
+|        -------------------------------------------------------------------------------------------------------
+| Returns: nothing
+|
+|        -------------------------------------------------------------------------------------------------------
+| Notes/Future Changes:
+| - 
+|        -------------------------------------------------------------------------------------------------------
+| Created by: Cameron Jupp
+| Date:       January 16, 2023
+| Edited:     {Date}  
+----------------------------------------------------------------------------------------------------------------------*/
+void menuFrame::delNode()
+{
+
 }
 
 /*---------------------------------------------------------------------------------------------------------------------
@@ -484,34 +540,3 @@ void menuFrame::back()
 // -----------------  /_/     /____/  /_/  \_/  /____/    /_/     /___/  /_____/  /_/  \_/  /_____/ ------------------- //
 // -------------------------------------------------------------------------------------------------------------------- //
 
-/*---------------------------------------------------------------------------------------------------------------------
-| oledSystemInit; This function initializes all of the OLED specific components and then clears the display.
-| If using a different kind of display, this function should be replaced with whatever initializations are needed
-| for that system
-|        -------------------------------------------------------------------------------------------------------
-| Arguments:
-| - N/A
-|        -------------------------------------------------------------------------------------------------------
-| Returns: nothing
-|
-|        -------------------------------------------------------------------------------------------------------
-| Notes/Future Changes:
-| - 
-|        -------------------------------------------------------------------------------------------------------
-| Created by: Cameron Jupp
-| Date:       December 16, 2022
-| Edited:     {Date}  
-----------------------------------------------------------------------------------------------------------------------*/
-void oledSystemInit()
-{
-// SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) 
-{ 
-  Serial.println(F("SSD1306 allocation failed"));
-  for(;;); // Don't proceed, loop forever
-}
-
-  display.cp437(true);         // Use full 256 char 'Code Page 437' font
-
-  display.clearDisplay();
-}
